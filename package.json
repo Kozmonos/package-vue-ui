@@ -1,0 +1,62 @@
+{
+  "name": "@kozmonos/ui",
+  "version": "0.0.1",
+  "description": "Vue ui pack",
+  "scripts": {
+    "serve": "NODE_ENV=development vue-cli-service serve",
+    "serve:production-test": "NODE_ENV=production-test vue-cli-service serve",
+    "build": "vue-cli-service build --target lib --name ui 'src/main-production.js'",
+    "deploy": "custom-command github/push",
+    "build:dev": "vue-cli-service build --target app --name ui",
+    "publish:major": "npm version major --no-git-tag-version;npm run deploy",
+    "publish:minor": "npm version minor --no-git-tag-version;npm run deploy",
+    "publish:patch": "npm version patch --no-git-tag-version;npm run deploy",
+    "test": "vue-cli-service test:unit tests/unit/*.spec.js",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "main": "dist/ui.common.js",
+  "unpkg": "dist/ui.umd.min.js",
+  "files": [
+    "dist/**/*",
+    "assets/**/*",
+    "README.md"
+  ],
+  "dependencies": {
+    "@kozmonos/form-elements": "^1.0.0",
+    "bootstrap-vue": "^2.21.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.8",
+    "@storybook/addon-actions": "^6.4.19",
+    "@storybook/addon-essentials": "^6.4.19",
+    "@storybook/addon-links": "^6.4.19",
+    "@storybook/vue": "^6.4.19",
+    "@vue/cli-plugin-unit-mocha": "~4.5.13",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/test-utils": "^1.0.3",
+    "babel-loader": "^8.2.4",
+    "cache-loader": "^4.1.0",
+    "chai": "^4.1.2",
+    "core-js": "^3.21.1",
+    "null-loader": "^4.0.1",
+    "sass": "^1.49.9",
+    "sass-loader": "^10.2.1",
+    "vue": "^2.6.14",
+    "vue-loader": "^15.9.8",
+    "vue-template-compiler": "^2.6.14",
+    "webpack": "^4.46.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Kozmonos/package-vue-ui/issues"
+  },
+  "homepage": "https://github.com/Kozmonos/package-vue-ui#readme",
+  "keywords": [
+    "vue ui"
+  ],
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kozmonos/package-vue-ui.git"
+  }
+}

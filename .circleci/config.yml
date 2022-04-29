@@ -1,0 +1,127 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.3.0
+  sonarcloud: sonarsource/sonarcloud@1.0.3
+
+commands:
+  notify_slack_error:
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
+  notify_slack_pass:
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+
+
+slack-fail-post-step: &slack-fail-post-step
+  post-steps:
+      - notify_slack_error
+
+slack-fail-success-post-step: &slack-fail-success-post-step
+  post-steps:
+      - notify_slack_error
+      - notify_slack_pass
+
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:16.13.1
+
+jobs:
+  install_dependencies:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+      - run: npm install
+      - persist_to_workspace:
+          root: ~/repo
+          paths: 
+            - '*'
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Run tests
+          command: npm test
+  codequality:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - sonarcloud/scan
+  build_storybook:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Build Storybook
+          command: npm run build-storybook
+  deploy_storybook:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Publish package
+          command: npx chromatic --project-token=$storybook_TOKEN --ci
+  build_npmjs:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Build Storybook
+          command: npm run build-storybook
+  deploy_npmjs:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publish package
+          command: npm publish --access public
+workflows:
+  version: 2
+  test_build_deploy:
+    jobs:
+      - install_dependencies
+      - test:
+          requires:
+              - install_dependencies
+          <<: *slack-fail-post-step
+      - codequality:
+          requires:
+              - test
+          <<: *slack-fail-post-step
+      - build_storybook:
+          requires:
+              - codequality
+          <<: *slack-fail-post-step
+      - deploy_storybook:
+          requires:
+              - build_storybook
+          <<: *slack-fail-post-step
+      - build_npmjs:
+          requires:
+              - deploy_storybook
+          <<: *slack-fail-post-step
+      - deploy_npmjs:
+          requires:
+              - build_npmjs
+          <<: *slack-fail-success-post-step

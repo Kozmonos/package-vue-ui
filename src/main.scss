@@ -1,0 +1,25 @@
+@import "../node_modules/bootstrap/scss/functions";
+@import "../node_modules/bootstrap/scss/variables";
+@each $color, $value in $theme-colors {
+  .#{$color}-fill .dropdown-item:active,.#{$color}-fill .dropdown-item:hover {
+    background-color: $value;
+  }
+  .#{$color}-theme .dropdown-menu{
+    background-color: $value;
+ 
+}
+.#{$color}-fill{
+  fill: $value;
+
+}
+  .#{$color}-theme .dropdown-item{
+    @if $color=="dark" {
+      color: white;
+    } @else {
+      color: black;
+    }
+  }
+  
+
+
+}

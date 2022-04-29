@@ -1,0 +1,58 @@
+<Meta title="Introduction" />
+
+<style>{`
+  .container{
+    margin-top: 20px;
+  }
+  .description{
+    margin:30px 0;
+  }
+  
+`}</style>
+
+# Form Elements
+
+<div className="description">It's a vue ui package.</div>
+
+## Installation
+
+<div className="container">
+
+<span>1. install package</span>
+
+```bash
+npm i @kozmonos/ui
+```
+
+<span>2. import globally bootstrap css files</span>
+
+```javascript
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-vue/dist/bootstrap-vue.css";
+```
+
+</div>
+
+## Usage
+
+```html
+<template>
+  <div>
+    <three-dots
+      theme="dark"
+      variant="danger"
+      :items="['item 1','item 2']"
+      @clicked="clickedAnyItem"
+      @item1-clicked="clickedItem1"
+    />
+  </div>
+</template>
+<script>
+  import { ThreeDots } from "@kozmonos/ui";
+  export default {
+    components: {
+      ThreeDots,
+    },
+  };
+</script>
+```
