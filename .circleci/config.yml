@@ -27,7 +27,6 @@ slack-fail-success-post-step: &slack-fail-success-post-step
       - notify_slack_error
       - notify_slack_pass
 
-
 defaults: &defaults
   working_directory: ~/repo
   docker:
@@ -39,10 +38,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
+          key: v1-dependencies-{{ checksum "package-lock.json" }}
       - run: npm install
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
       - persist_to_workspace:
           root: ~/repo
           paths: 
@@ -55,13 +56,15 @@ jobs:
       - run:
           name: Run tests
           command: npm test
+
   codequality:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
       - sonarcloud/scan
-  build_storybook:
+
+  storybook:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -69,33 +72,25 @@ jobs:
       - run:
           name: Build Storybook
           command: npm run build-storybook
-  deploy_storybook:
+      - run:
+          name: Publish Storybook
+          command: npx chromatic --exit-zero-on-changes --project-token=$storybook_TOKEN --ci
+
+  npmjs:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
       - run:
-          name: Publish package
-          command: npx chromatic --project-token=$storybook_TOKEN --ci
-  build_npmjs:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/repo
-      - run:
-          name: Build Storybook
-          command: npm run build-storybook
-  deploy_npmjs:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/repo
+          name: Build Project
+          command: npm run build
       - run:
           name: Authenticate with registry
           command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
       - run:
-          name: Publish package
+          name: Publish Project
           command: npm publish --access public
+
 workflows:
   version: 2
   test_build_deploy:
@@ -109,19 +104,11 @@ workflows:
           requires:
               - test
           <<: *slack-fail-post-step
-      - build_storybook:
+      - storybook:
           requires:
               - codequality
           <<: *slack-fail-post-step
-      - deploy_storybook:
+      - npmjs:
           requires:
-              - build_storybook
-          <<: *slack-fail-post-step
-      - build_npmjs:
-          requires:
-              - deploy_storybook
-          <<: *slack-fail-post-step
-      - deploy_npmjs:
-          requires:
-              - build_npmjs
+              - storybook
           <<: *slack-fail-success-post-step
