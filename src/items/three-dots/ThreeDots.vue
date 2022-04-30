@@ -1,6 +1,6 @@
 <template>
   <div class="three-dots" :class="theme + '-theme ' + variant + '-fill'">
-    <b-dropdown variant="link" no-caret>
+    <b-dropdown variant="link" v-bind="$attrs" no-caret>
       <template #button-content>
         <ThreeDot :fill="theme" />
       </template>
@@ -34,6 +34,10 @@ export default {
     items: {
       type: Array,
       required: true,
+    },
+    position: {
+      type: String,
+      default: "right",
     },
   },
   methods: {

@@ -1,6 +1,7 @@
 <template>
-  <div>
+  <div s>
     <ThreeDots
+      right
       theme="dark"
       variant="danger"
       :items="['qq', 'qqq']"
